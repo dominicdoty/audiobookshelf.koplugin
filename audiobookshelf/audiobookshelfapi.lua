@@ -23,9 +23,9 @@ function AudiobookshelfApi:getLibraries()
         method = "GET",
         headers = {
             ["Authorization"] = "Bearer " .. self.abs_settings:readSetting("token"),
-            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, ".")),
+            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, "."))
         },
-        sink = ltn12.sink.table(sink),
+        sink = ltn12.sink.table(sink)
     }
     socketutil:set_timeout()
     local code, _, status = socket.skip(1, http.request(request))
@@ -43,13 +43,14 @@ function AudiobookshelfApi:getLibraryItems(id)
     -- this is "ebooks" base64 encoded, and the URL encoded, to only return library items with ebooks
     local filters = "ebooks." .. "ZWJvb2s%3D"
     local request = {
-        url = self.abs_settings:readSetting("server") .. "/api/libraries/" .. id .. "/items?filter=" .. filters .. "&sort=media.metadata.title&limit=0",
+        url = self.abs_settings:readSetting("server") .. "/api/libraries/" .. id .. "/items?filter=" .. filters ..
+            "&sort=media.metadata.title&limit=0",
         method = "GET",
         headers = {
             ["Authorization"] = "Bearer " .. self.abs_settings:readSetting("token"),
-            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, ".")),
+            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, "."))
         },
-        sink = ltn12.sink.table(sink),
+        sink = ltn12.sink.table(sink)
     }
     socketutil:set_timeout()
     local code, _, status = socket.skip(1, http.request(request))
@@ -58,7 +59,7 @@ function AudiobookshelfApi:getLibraryItems(id)
         local _, result = pcall(JSON.decode, response, JSON.decode.simple)
         return result.results
     end
-    logger.warn("AudiobookshelfApi: cannot get library items for library", id ,status or code)
+    logger.warn("AudiobookshelfApi: cannot get library items for library", id, status or code)
     logger.warn("AudiobookshelfApi: error:", response)
 end
 
@@ -69,9 +70,9 @@ function AudiobookshelfApi:getLibraryItem(id)
         method = "GET",
         headers = {
             ["Authorization"] = "Bearer " .. self.abs_settings:readSetting("token"),
-            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, ".")),
+            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, "."))
         },
-        sink = ltn12.sink.table(sink),
+        sink = ltn12.sink.table(sink)
     }
     socketutil:set_timeout()
     local code, _, status = socket.skip(1, http.request(request))
@@ -80,7 +81,7 @@ function AudiobookshelfApi:getLibraryItem(id)
         local _, result = pcall(JSON.decode, response, JSON.decode.simple)
         return result
     end
-    logger.warn("AudiobookshelfApi: cannot get library items for library", id ,status or code)
+    logger.warn("AudiobookshelfApi: cannot get library items for library", id, status or code)
     logger.warn("AudiobookshelfApi: error:", response)
 end
 
@@ -91,18 +92,17 @@ function AudiobookshelfApi:downloadFile(id, ino, filename, local_path)
         method = "GET",
         headers = {
             ["Authorization"] = "Bearer " .. self.abs_settings:readSetting("token"),
-            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, ".")),
+            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, "."))
         },
-        sink = ltn12.sink.file(io.open(local_path .. "/" .. filename, "w")),
+        sink = ltn12.sink.file(io.open(local_path .. "/" .. filename, "w"))
     }
     local code, _, status = socket.skip(1, http.request(request))
     socketutil:reset_timeout()
     if code ~= 200 then
-        logger.warn("AudiobookshelfApi: cannot download file:", id , ino, status or code)
+        logger.warn("AudiobookshelfApi: cannot download file:", id, ino, status or code)
     end
     return code
 end
-
 
 function AudiobookshelfApi:getLibraryItemCover(id)
     local sink = {}
@@ -111,9 +111,9 @@ function AudiobookshelfApi:getLibraryItemCover(id)
         method = "GET",
         headers = {
             ["Authorization"] = "Bearer " .. self.abs_settings:readSetting("token"),
-            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, ".")),
+            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, "."))
         },
-        sink = ltn12.sink.table(sink),
+        sink = ltn12.sink.table(sink)
     }
     socketutil:set_timeout()
     local code, _, status = socket.skip(1, http.request(request))
@@ -122,7 +122,7 @@ function AudiobookshelfApi:getLibraryItemCover(id)
         local result = RenderImage:renderImageData(response, #response)
         return result
     end
-    logger.warn("AudiobookshelfApi: cannot get library items for library", id ,status or code)
+    logger.warn("AudiobookshelfApi: cannot get library items for library", id, status or code)
     logger.warn("AudiobookshelfApi: error:", response)
 
 end
@@ -133,13 +133,14 @@ function AudiobookshelfApi:getSearchResults(id, search_query)
     -- this is "ebooks" base64 encoded, and the URL encoded, to only return library items with ebooks
     local filters = "ebooks." .. "ZWJvb2s%3D"
     local request = {
-        url = self.abs_settings:readSetting("server") .. "/api/libraries/" .. id .. "/search?q=" .. url_encoded_search_string .. "&filter=" .. filters,
+        url = self.abs_settings:readSetting("server") .. "/api/libraries/" .. id .. "/search?q=" ..
+            url_encoded_search_string .. "&filter=" .. filters,
         method = "GET",
         headers = {
             ["Authorization"] = "Bearer " .. self.abs_settings:readSetting("token"),
-            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, ".")),
+            ["User-Agent"] = T("audiobookshelf.koplugin/%1", table.concat(VERSION, "."))
         },
-        sink = ltn12.sink.table(sink),
+        sink = ltn12.sink.table(sink)
     }
     socketutil:set_timeout()
     local code, _, status = socket.skip(1, http.request(request))
@@ -148,7 +149,7 @@ function AudiobookshelfApi:getSearchResults(id, search_query)
         local _, result = pcall(JSON.decode, response, JSON.decode.simple)
         return result
     end
-    logger.warn("AudiobookshelfApi: cannot search library", id ,search_query, status or code)
+    logger.warn("AudiobookshelfApi: cannot search library", id, search_query, status or code)
     logger.warn("AudiobookshelfApi: error:", response)
 
 end

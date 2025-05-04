@@ -28,7 +28,7 @@ local AudiobookshelfApi = require("audiobookshelf/audiobookshelfapi")
 
 local BookDetailsWidget = FocusManager:extend{
     padding = Size.padding.fullscreen,
-    onCloseParent = nil,
+    onCloseParent = nil
 }
 
 function BookDetailsWidget:onClose()
@@ -46,7 +46,6 @@ function BookDetailsWidget:init()
     self.small_font = Font:getFace("smallffont")
     self.medium_font = Font:getFace("ffont")
     self.large_font = Font:getFace("largeffont")
-
 
     local screen_size = Screen:getSize()
     self.covers_fullscreen = true
@@ -66,8 +65,10 @@ function BookDetailsWidget:getDetailsContent(width)
     local title_bar = TitleBar:new{
         width = width,
         bottom_v_padding = 0,
-        close_callback = function() self:onClose() end,
-        show_parent = self,
+        close_callback = function()
+            self:onClose()
+        end,
+        show_parent = self
     }
 
     local content = VerticalGroup:new{
@@ -77,7 +78,7 @@ function BookDetailsWidget:getDetailsContent(width)
         self:genHeader("Description"),
         self:genDescriptionContent(),
         self:genHeader("Files"),
-        self:genFileList(),
+        self:genFileList()
     }
     return content
 end
@@ -86,7 +87,7 @@ function BookDetailsWidget:genFileList()
     local screen_height = Screen:getHeight()
     local screen_width = Screen:getWidth()
     local list = VerticalGroup:new{
-        height =  screen_height * 0.2,
+        height = screen_height * 0.2
     }
     for _, file in ipairs(self.book_info.libraryFiles) do
         if file.fileType == "ebook" then
@@ -94,7 +95,7 @@ function BookDetailsWidget:genFileList()
                 width = screen_width,
                 ino = file.ino,
                 filename = file.metadata.filename,
-                size_in_bytes =  file.metadata.size,
+                size_in_bytes = file.metadata.size,
                 book_id = self.book_info.id,
                 onClose = self.onClose
             })
@@ -102,8 +103,6 @@ function BookDetailsWidget:genFileList()
     end
     return list
 end
-
-
 
 function BookDetailsWidget:genBookDetails()
     local screen_width = Screen:getWidth()
@@ -125,57 +124,53 @@ function BookDetailsWidget:genBookDetails()
 
     local book_metadata_group = VerticalGroup:new{
         align = "left",
-        VerticalSpan:new{ width = img_height * 0.15},
+        VerticalSpan:new{
+            width = img_height * 0.15
+        }
     }
-    table.insert(book_metadata_group,
-        TextBoxWidget:new{ -- book title
-            text = self.book_info.media.metadata.title,
-            face = self.medium_font,
-            alignment = "left",
-        }
-    )
+    table.insert(book_metadata_group, TextBoxWidget:new{ -- book title
+        text = self.book_info.media.metadata.title,
+        face = self.medium_font,
+        alignment = "left"
+    })
     if self.book_info.media.metadata.seriesName ~= "" then
-        table.insert(book_metadata_group,
-            TextBoxWidget:new{ -- book series (if applicable)
-                text = self.book_info.media.metadata.seriesName,
-                face = self.small_font,
-                alignment = "left",
-            }
-        )
-    end
-    table.insert(book_metadata_group,
-        TextBoxWidget:new{ -- book author
-            text = "by " .. book_author_string,
+        table.insert(book_metadata_group, TextBoxWidget:new{ -- book series (if applicable)
+            text = self.book_info.media.metadata.seriesName,
             face = self.small_font,
-            alignment = "left",
-        }
-    )
+            alignment = "left"
+        })
+    end
+    table.insert(book_metadata_group, TextBoxWidget:new{ -- book author
+        text = "by " .. book_author_string,
+        face = self.small_font,
+        alignment = "left"
+    })
     local metadata_label_group = VerticalGroup:new{
         align = "left",
         TextWidget:new{ -- book publish year
             text = "Publish year",
             face = self.small_font,
             alignment = "left",
-            fgcolor = Blitbuffer.COLOR_GRAY_9,
+            fgcolor = Blitbuffer.COLOR_GRAY_9
         },
         TextWidget:new{ -- book publish year
             text = "Publisher",
             face = self.small_font,
             alignment = "left",
-            fgcolor = Blitbuffer.COLOR_GRAY_9,
+            fgcolor = Blitbuffer.COLOR_GRAY_9
         },
         TextWidget:new{ -- book publish year
             text = "Genres",
             face = self.small_font,
             alignment = "left",
-            fgcolor = Blitbuffer.COLOR_GRAY_9,
+            fgcolor = Blitbuffer.COLOR_GRAY_9
         },
         TextWidget:new{ -- book publish year
             text = "Language",
             face = self.small_font,
             alignment = "left",
-            fgcolor = Blitbuffer.COLOR_GRAY_9,
-        },
+            fgcolor = Blitbuffer.COLOR_GRAY_9
+        }
     }
 
     local metadata_labeled_group = VerticalGroup:new{
@@ -183,39 +178,41 @@ function BookDetailsWidget:genBookDetails()
         TextWidget:new{ -- book publish year
             text = self.book_info.media.metadata.publishedYear or "",
             face = self.small_font,
-            alignment = "left",
+            alignment = "left"
         },
         TextWidget:new{ -- book publish year
             text = self.book_info.media.metadata.publisher or "",
             face = self.small_font,
-            alignment = "left",
+            alignment = "left"
         },
         TextWidget:new{ -- book publish year
             text = table.concat(self.book_info.media.metadata.genres, ", ") or "",
             face = self.small_font,
-            alignment = "left",
+            alignment = "left"
         },
         TextWidget:new{ -- book publish year
             text = self.book_info.media.metadata.language or "",
             face = self.small_font,
-            alignment = "left",
-        },
+            alignment = "left"
+        }
     }
 
     local extra_metadata_group = HorizontalGroup:new{
         align = "top",
         metadata_label_group,
-        HorizontalSpan:new{ width = math.floor(screen_width * 0.02)},
-        metadata_labeled_group,
+        HorizontalSpan:new{
+            width = math.floor(screen_width * 0.02)
+        },
+        metadata_labeled_group
     }
 
     table.insert(book_metadata_group, extra_metadata_group)
 
-
-
     local book_details_group = HorizontalGroup:new{
         align = "top",
-        HorizontalSpan:new{ width = math.floor(screen_width * 0.05) }
+        HorizontalSpan:new{
+            width = math.floor(screen_width * 0.05)
+        }
     }
 
     local image = AudiobookshelfApi:getLibraryItemCover(self.book_id)
@@ -224,25 +221,23 @@ function BookDetailsWidget:genBookDetails()
         local actual_w, actual_h = image:getWidth(), image:getHeight()
         if actual_w > img_width or actual_h > img_height then
             local scale_factor = math.min(img_width / actual_w, img_height / actual_h)
-            actual_w = math.min(math.floor(actual_w * scale_factor)+1, img_width)
-            actual_h = math.min(math.floor(actual_h * scale_factor)+1, img_height)
-            image = RenderImage:scaleBlitBuffer(image , actual_w, actual_h, true)
+            actual_w = math.min(math.floor(actual_w * scale_factor) + 1, img_width)
+            actual_h = math.min(math.floor(actual_h * scale_factor) + 1, img_height)
+            image = RenderImage:scaleBlitBuffer(image, actual_w, actual_h, true)
         end
-    table.insert(book_details_group, ImageWidget:new{
-        image = image,
-        width = actual_w,
-        height = actual_h
-    })
+        table.insert(book_details_group, ImageWidget:new{
+            image = image,
+            width = actual_w,
+            height = actual_h
+        })
     end
 
-    table.insert(
-        book_details_group,
-        HorizontalSpan:new{ width = math.floor(screen_width * 0.05) }
-    )
+    table.insert(book_details_group, HorizontalSpan:new{
+        width = math.floor(screen_width * 0.05)
+    })
     table.insert(book_details_group, book_metadata_group)
 
     return book_details_group
-
 
 end
 
@@ -254,42 +249,51 @@ function BookDetailsWidget:genHeader(title)
         face = self.medium_font,
         fgcolor = Blitbuffer.COLOR_GRAY_9
     }
-    local padding_span = HorizontalSpan:new{ width = self.padding }
+    local padding_span = HorizontalSpan:new{
+        width = self.padding
+    }
     local line_width = (width - header_title:getSize().w) / 2 - self.padding * 2
     local line_container = LeftContainer:new{
-        dimen = Geom:new{ w = line_width, h = height },
+        dimen = Geom:new{
+            w = line_width,
+            h = height
+        },
         LineWidget:new{
             background = Blitbuffer.COLOR_LIGHT_GRAY,
             dimen = Geom:new{
                 w = line_width,
-                h = Size.line.thick,
+                h = Size.line.thick
             }
         }
     }
 
     local span_top, span_bottom
     if Screen:getScreenMode() == "landscape" then
-        span_top = VerticalSpan:new{ width = Size.span.horizontal_default }
-        span_bottom = VerticalSpan:new{ width = Size.span.horizontal_default }
+        span_top = VerticalSpan:new{
+            width = Size.span.horizontal_default
+        }
+        span_bottom = VerticalSpan:new{
+            width = Size.span.horizontal_default
+        }
     else
-        span_top = VerticalSpan:new{ width = Size.item.height_default }
-        span_bottom = VerticalSpan:new{ width = Size.span.vertical_large }
+        span_top = VerticalSpan:new{
+            width = Size.item.height_default
+        }
+        span_bottom = VerticalSpan:new{
+            width = Size.span.vertical_large
+        }
     end
 
-    return VerticalGroup:new{
-        span_top,
-        HorizontalGroup:new{
-            align = "center",
-            padding_span,
-            line_container,
-            padding_span,
-            header_title,
-            padding_span,
-            line_container,
-            padding_span,
-        },
-        span_bottom,
-    }
+    return VerticalGroup:new{span_top, HorizontalGroup:new{
+        align = "center",
+        padding_span,
+        line_container,
+        padding_span,
+        header_title,
+        padding_span,
+        line_container,
+        padding_span
+    }, span_bottom}
 end
 
 function BookDetailsWidget:genDescriptionContent()
@@ -301,10 +305,13 @@ function BookDetailsWidget:genDescriptionContent()
         face = self.small_font,
         width = screen_width - self.padding * 2,
         height = screen_height * 0.2,
-        dialog = self,
+        dialog = self
     }
     return CenterContainer:new{
-        dimen = Geom:new{ w = screen_width, h = text:getSize().h },
+        dimen = Geom:new{
+            w = screen_width,
+            h = text:getSize().h
+        },
         text
     }
 end

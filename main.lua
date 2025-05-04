@@ -7,7 +7,7 @@ local logger = require("logger")
 
 local Audiobookshelf = WidgetContainer:extend{
     name = "audiobookshelf",
-    is_doc_only = false,
+    is_doc_only = false
 }
 
 function Audiobookshelf:onDispatcherRegisterActions()

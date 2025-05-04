@@ -41,7 +41,7 @@ function AudiobookshelfBrowser:genItemTableFromLibraries()
         table.insert(item_table, {
             text = library.name,
             type = "library",
-            id = library.id,
+            id = library.id
         })
     end
     return item_table
@@ -56,10 +56,13 @@ function AudiobookshelfBrowser:onMenuSelect(item)
         })
         self:openLibrary(item.id, item.text)
     elseif item.type == "book" then
-        local bookdetailswidget = BookDetailsWidget:new{ book_id = item.id, onCloseParent = self.onClose }
+        local bookdetailswidget = BookDetailsWidget:new{
+            book_id = item.id,
+            onCloseParent = self.onClose
+        }
         UIManager:show(bookdetailswidget, "flashui")
     end
-        return true
+    return true
 end
 
 function AudiobookshelfBrowser:onLeftButtonTap()
@@ -76,51 +79,43 @@ function AudiobookshelfBrowser:configAudiobookshelf()
     local hint_token = "Audiobookshelf API Token"
     local text_token = self.abs_settings:readSetting("token", "")
     local title = "Audiobookshelf Settings"
-    self.settings_dialog = MultiInputDialog:new {
+    self.settings_dialog = MultiInputDialog:new{
         title = title,
-        fields = {
-            {
-                text = text_server,
-                input_type = "string",
-                hint = hint_server
-            },
-            {
-                text = text_token,
-                input_type = "string",
-                hint = hint_token
-            }
-        },
-        buttons = {
-            {
-                {
-                    text = "Cancel",
-                    id = "close",
-                    callback = function()
-                        self.settings_dialog:onClose()
-                        UIManager:close(self.settings_dialog)
-                    end
-                },
-                {
-                    text = "Save",
-                    callback = function()
-                        local fields = self.settings_dialog:getFields()
-                        logger.warn(fields)
+        fields = {{
+            text = text_server,
+            input_type = "string",
+            hint = hint_server
+        }, {
+            text = text_token,
+            input_type = "string",
+            hint = hint_token
+        }},
+        buttons = {{{
+            text = "Cancel",
+            id = "close",
+            callback = function()
+                self.settings_dialog:onClose()
+                UIManager:close(self.settings_dialog)
+            end
+        }, {
+            text = "Save",
+            callback = function()
+                local fields = self.settings_dialog:getFields()
+                logger.warn(fields)
 
-                        self.abs_settings:saveSetting("server", fields[1])
-                        self.abs_settings:saveSetting("token", fields[2])
-                        self.abs_settings:flush()
+                self.abs_settings:saveSetting("server", fields[1])
+                self.abs_settings:saveSetting("token", fields[2])
+                self.abs_settings:flush()
 
-                        self.settings_dialog:onClose()
-                        UIManager:close(self.settings_dialog)
+                self.settings_dialog:onClose()
+                UIManager:close(self.settings_dialog)
 
-                        UIManager:show(InfoMessage:new{
-                            text = "Settings saved",
-                            timeout = 1
-                        })
-                    end
-                }
-            }
-        }
+                UIManager:show(InfoMessage:new{
+                    text = "Settings saved",
+                    timeout = 1
+                })
+            end
+        }}}
     }
     UIManager:show(self.settings_dialog)
     self.settings_dialog:onShowKeyboard()
@@ -130,27 +125,22 @@ function AudiobookshelfBrowser:ShowSearch()
     self.search_dialog = InputDialog:new{
         title = "Search",
         input = self.search_value,
-        buttons = {
-            {
-                {
-                    text = "Cancel",
-                    id = "close",
-                    enabled = true,
-                    callback = function()
-                        self.search_dialog:onClose()
-                        UIManager:close(self.search_dialog)
-                    end
-                },
-                {
-                    text = "Search",
-                    enabled = true,
-                    callback = function()
-                        self.search_value = self.search_dialog:getInputText()
-                        self:search()
-                    end
-                }
-            }
-        }
+        buttons = {{{
+            text = "Cancel",
+            id = "close",
+            enabled = true,
+            callback = function()
+                self.search_dialog:onClose()
+                UIManager:close(self.search_dialog)
+            end
+        }, {
+            text = "Search",
+            enabled = true,
+            callback = function()
+                self.search_value = self.search_dialog:getInputText()
+                self:search()
+            end
+        }}}
     }
     UIManager:show(self.search_dialog)
     self.search_dialog:onShowKeyboard()
@@ -200,8 +190,5 @@ function AudiobookshelfBrowser:openLibrary(id, name)
     self:switchItemTable(name, tbl)
     return true
 end
-
-
-
 
 return AudiobookshelfBrowser

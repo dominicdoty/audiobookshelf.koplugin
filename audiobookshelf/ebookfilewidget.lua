@@ -29,8 +29,6 @@ local lfs = require("libs/libkoreader-lfs")
 local T = require("ffi/util").template
 local _ = require("gettext")
 
-
-
 local EbookFileWidget = InputContainer:extend{
     filename = nil,
     ino = nil,
@@ -46,14 +44,11 @@ function EbookFileWidget:readSettings()
     return self.abs_settings
 end
 
-
 function EbookFileWidget:init()
-
 
     self.small_font = Font:getFace("smallffont")
     self.medium_font = Font:getFace("ffont")
     self.large_font = Font:getFace("largeffont")
-
 
     local first_text = TextBoxWidget:new{
         text = self.filename or "",
@@ -62,7 +57,10 @@ function EbookFileWidget:init()
     }
     local content_height = first_text:getSize().h
     local left_container = LeftContainer:new{
-        dimen = Geom:new{w = self.width - self.side_margin * 2, h =  content_height},
+        dimen = Geom:new{
+            w = self.width - self.side_margin * 2,
+            h = content_height
+        },
         first_text
     }
     local last_text = TextWidget:new{
@@ -70,11 +68,17 @@ function EbookFileWidget:init()
         face = self.small_font
     }
     local right_container = RightContainer:new{
-        dimen = Geom:new{w = self.width - self.side_margin * 2, h = content_height},
-        last_text,
+        dimen = Geom:new{
+            w = self.width - self.side_margin * 2,
+            h = content_height
+        },
+        last_text
     }
     local overlay_container = OverlapGroup:new{
-        dimen = Geom:new{w = self.width - self.side_margin * 2, h = content_height},
+        dimen = Geom:new{
+            w = self.width - self.side_margin * 2,
+            h = content_height
+        },
         left_container,
         right_container
     }
@@ -87,37 +91,43 @@ function EbookFileWidget:init()
         overlay_container
     }
     self[1] = CenterContainer:new{
-        dimen = Geom:new{ w = self.width, h = underline_container:getSize().h },
+        dimen = Geom:new{
+            w = self.width,
+            h = underline_container:getSize().h
+        },
         underline_container
     }
 
-    self.dimen = Geom:new{ w = self.width, h = underline_container:getSize().h }
+    self.dimen = Geom:new{
+        w = self.width,
+        h = underline_container:getSize().h
+    }
     self.ges_events = {
-        TapSelect = {
-            GestureRange:new{
-                ges = "tap",
-                range = self.dimen
-            },
-        },
-        HoldSelect = {
-            GestureRange:new{
-                ges = self.handle_hold_on_hold_release and "hold_release" or "hold",
-                range = self.dimen
-            },
-        },
+        TapSelect = {GestureRange:new{
+            ges = "tap",
+            range = self.dimen
+        }},
+        HoldSelect = {GestureRange:new{
+            ges = self.handle_hold_on_hold_release and "hold_release" or "hold",
+            range = self.dimen
+        }}
     }
 
 end
 
 function EbookFileWidget:onTapSelect()
     -- make sure it exists first
-    if not self[1].dimen then return end
+    if not self[1].dimen then
+        return
+    end
     self:downloadFile()
 end
 
 function EbookFileWidget:onHoldSelect()
     -- make sure it exists first
-    if not self[1].dimen then return end
+    if not self[1].dimen then
+        return
+    end
     -- stub for adding long hold functionality
     logger.warn(self.book_id, self.ino)
 end
@@ -145,13 +155,13 @@ function EbookFileWidget:downloadFile()
             else
                 UIManager:show(InfoMessage:new{
                     text = T(_("Could not save file to:\n%1"), BD.filepath(path)),
-                    timeout = 3,
+                    timeout = 3
                 })
             end
         end)
         UIManager:show(InfoMessage:new{
             text = _("Downloading. This might take a moment."),
-            timeout = 1,
+            timeout = 1
         })
     end
 
@@ -166,89 +176,78 @@ function EbookFileWidget:downloadFile()
     local download_dir = abs_settings:readSetting("download_dir") or G_reader_settings:readSetting("lastdir")
     local chosen_filename = self.filename
 
-    local buttons = {
-        {
-            {
-                text = "Choose folder",
-                callback = function()
-                    require("ui/downloadmgr"):new{
-                        onConfirm = function(path)
-                            abs_settings:saveSetting("download_dir", path)
-                            abs_settings:flush()
-                            download_dir = path
-                            self.download_dialog:setTitle(genTitle(self.filename, self.size_in_bytes, chosen_filename, path))
-                        end,
-                    }:chooseDir(download_dir)
-                end,
-            },
-            {
-                text = _("Change filename"),
-                callback = function()
-                    local input_dialog
-                    input_dialog = InputDialog:new{
-                        title = _("Enter filename"),
-                        input = chosen_filename,
-                        input_hint = self.filename,
-                        buttons = {
-                            {
-                                {
-                                    text = _("Cancel"),
-                                    id = "close",
-                                    callback = function()
-                                        UIManager:close(input_dialog)
-                                    end,
-                                },
-                                {
-                                    text = _("Set filename"),
-                                    is_enter_default = true,
-                                    callback = function()
-                                        chosen_filename = input_dialog:getInputValue()
-                                        if chosen_filename == "" then
-                                            chosen_filename = self.filename
-                                        end
-                                        UIManager:close(input_dialog)
-                                        self.download_dialog:setTitle(genTitle(self.filename, self.size_in_bytes, chosen_filename, download_dir))
-                                    end,
-                                },
-                            }
-                        },
-                    }
-                    UIManager:show(input_dialog)
-                    input_dialog:onShowKeyboard()
-                end,
-            },
-        },
-        {
-            {
-                text = _("Cancel"),
-                callback = function()
-                    UIManager:close(self.download_dialog)
-                end,
-            },
-            {
-                text = _("Download"),
-                callback = function()
-                    UIManager:close(self.download_dialog)
-                    local path_dir = (download_dir ~= "/" and download_dir or "")
-                    local callback_close = function() self:onClose() end
-                    if lfs.attributes(path_dir) then
-                        UIManager:show(ConfirmBox:new{
-                            text = _("File already exists. Would you like to overwrite it?"),
-                            ok_callback = function()
-                                startDownloadFile(chosen_filename, path_dir, callback_close)
-                            end
-                        })
-                    else
-                        startDownloadFile(path_dir, callback_close)
+    local buttons = {{{
+        text = "Choose folder",
+        callback = function()
+            require("ui/downloadmgr"):new{
+                onConfirm = function(path)
+                    abs_settings:saveSetting("download_dir", path)
+                    abs_settings:flush()
+                    download_dir = path
+                    self.download_dialog:setTitle(genTitle(self.filename, self.size_in_bytes, chosen_filename, path))
+                end
+            }:chooseDir(download_dir)
+        end
+    }, {
+        text = _("Change filename"),
+        callback = function()
+            local input_dialog
+            input_dialog = InputDialog:new{
+                title = _("Enter filename"),
+                input = chosen_filename,
+                input_hint = self.filename,
+                buttons = {{{
+                    text = _("Cancel"),
+                    id = "close",
+                    callback = function()
+                        UIManager:close(input_dialog)
                     end
-                end,
-            },
-        },
-    }
+                }, {
+                    text = _("Set filename"),
+                    is_enter_default = true,
+                    callback = function()
+                        chosen_filename = input_dialog:getInputValue()
+                        if chosen_filename == "" then
+                            chosen_filename = self.filename
+                        end
+                        UIManager:close(input_dialog)
+                        self.download_dialog:setTitle(genTitle(self.filename, self.size_in_bytes, chosen_filename,
+                            download_dir))
+                    end
+                }}}
+            }
+            UIManager:show(input_dialog)
+            input_dialog:onShowKeyboard()
+        end
+    }}, {{
+        text = _("Cancel"),
+        callback = function()
+            UIManager:close(self.download_dialog)
+        end
+    }, {
+        text = _("Download"),
+        callback = function()
+            UIManager:close(self.download_dialog)
+            local path_dir = (download_dir ~= "/" and download_dir or "")
+            local callback_close = function()
+                self:onClose()
+            end
+            if lfs.attributes(path_dir) then
+                UIManager:show(ConfirmBox:new{
+                    text = _("File already exists. Would you like to overwrite it?"),
+                    ok_callback = function()
+                        startDownloadFile(chosen_filename, path_dir, callback_close)
+                    end
+                })
+            else
+                startDownloadFile(path_dir, callback_close)
+            end
+        end
+    }}}
 
     self.download_dialog = ButtonDialog:new{
         title = genTitle(self.filename, self.size_in_bytes, chosen_filename, download_dir),
-        buttons = buttons,
+        buttons = buttons
     }
     UIManager:show(self.download_dialog)
 end
