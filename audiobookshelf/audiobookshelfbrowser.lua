@@ -18,6 +18,8 @@ local AudiobookshelfBrowser = Menu:extend{
     show_parent = nil
 }
 
+local network_error_text = "Network error, do you have a network connection?"
+
 -- levels:
 -- abs
 -- library
@@ -37,11 +39,18 @@ end
 function AudiobookshelfBrowser:genItemTableFromLibraries()
     local item_table = {}
     local libraries = AudiobookshelfApi:getLibraries()
-    for _, library in ipairs(libraries) do
+
+    if libraries then
+        for _, library in ipairs(libraries) do
+            table.insert(item_table, {
+                text = library.name,
+                type = "library",
+                id = library.id
+            })
+        end
+    else
         table.insert(item_table, {
-            text = library.name,
-            type = "library",
-            id = library.id
+            text = network_error_text
         })
     end
     return item_table
@@ -159,13 +168,18 @@ end
 function AudiobookshelfBrowser:loadLibrarySearch(search)
     local tbl = {}
     local libraryItems = AudiobookshelfApi:getSearchResults(self.library_id, search)
-    logger.warn(libraryItems)
-    for _, item in ipairs(libraryItems.book) do
+    if libraryItems then
+        for _, item in ipairs(libraryItems.book) do
+            table.insert(tbl, {
+                id = item.libraryItem.id,
+                text = item.libraryItem.media.metadata.title,
+                mandatory = item.libraryItem.media.metadata.authorName,
+                type = "book"
+            })
+        end
+    else
         table.insert(tbl, {
-            id = item.libraryItem.id,
-            text = item.libraryItem.media.metadata.title,
-            mandatory = item.libraryItem.media.metadata.authorName,
-            type = "book"
+            text = network_error_text
         })
     end
 
@@ -176,11 +190,17 @@ end
 function AudiobookshelfBrowser:openLibrary(id, name)
     local tbl = {}
     local libraryItems = AudiobookshelfApi:getLibraryItems(id)
-    for _, item in ipairs(libraryItems) do
+    if libraryItems then
+        for _, item in ipairs(libraryItems) do
+            table.insert(tbl, {
+                id = item.id,
+                text = item.media.metadata.title .. " by " .. item.media.metadata.authorName,
+                type = "book"
+            })
+        end
+    else
         table.insert(tbl, {
-            id = item.id,
-            text = item.media.metadata.title .. " by " .. item.media.metadata.authorName,
-            type = "book"
+            text = network_error_text
         })
     end
 
